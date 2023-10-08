@@ -31,12 +31,11 @@ def mostrar_monitor_recursos(stdscr):
         while True:
             stdscr.clear()
 
-            # Actualizar las dimensiones de la ventana si cambia el tamaño de la terminal
+            # Actualiza las dimensiones de la ventana si cambia el tamaño de la terminal
             sh, sw = stdscr.getmaxyx()
             monitor_height = sh // 2
             max_bar_width = sw - 30
 
-            # Monitor de recursos en la parte superior
             # Monitor de recursos en la parte superior
             cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
             mem_info = psutil.virtual_memory()
@@ -107,8 +106,6 @@ def mostrar_monitor_recursos(stdscr):
                     top_process = selected_process - max_display_lines + 1
             elif key == ord('q'):
                 break
-
-            # ... (el resto del código es igual)
 
     except KeyboardInterrupt:
         pass
