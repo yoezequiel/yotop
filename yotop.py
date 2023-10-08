@@ -7,6 +7,7 @@ COLOR_YELLOW = 3
 COLOR_CYAN = 4
 COLOR_WHITE = 5
 
+
 def init_colors():
     curses.start_color()
     curses.init_pair(COLOR_RED, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -14,6 +15,7 @@ def init_colors():
     curses.init_pair(COLOR_YELLOW, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     curses.init_pair(COLOR_CYAN, curses.COLOR_CYAN, curses.COLOR_BLACK)
     curses.init_pair(COLOR_WHITE, curses.COLOR_WHITE, curses.COLOR_BLACK)
+
 
 def mostrar_monitor_recursos(stdscr):
     curses.curs_set(0)
@@ -29,30 +31,46 @@ def mostrar_monitor_recursos(stdscr):
         while True:
             stdscr.clear()
 
+            # Actualizar las dimensiones de la ventana si cambia el tamaño de la terminal
+            sh, sw = stdscr.getmaxyx()
+            monitor_height = sh // 2
+            max_bar_width = sw - 30
+
+            # Monitor de recursos en la parte superior
             # Monitor de recursos en la parte superior
             cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
             mem_info = psutil.virtual_memory()
             swap_info = psutil.swap_memory()
 
-            stdscr.addstr(0, 0, "yotop by:yoezequiel", curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
+            stdscr.addstr(0, 0, "yotop by:yoezequiel",
+                          curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
             for i, percent in enumerate(cpu_percent):
                 bar_length = int(percent / 100 * max_bar_width)
-                cpu_line = f"CPU {i + 1}: [{('=' * bar_length)}{(' ' * (max_bar_width - bar_length))}] {percent}%"                
+                cpu_line = f"CPU {i + 1}: [{('=' * bar_length)}{(' ' * (max_bar_width - bar_length))}] {percent}%"
                 if percent > 80:
-                    stdscr.addstr(i + 2, 0, cpu_line, curses.color_pair(COLOR_RED))
+                    stdscr.addstr(i + 2, 0, cpu_line,
+                                  curses.color_pair(COLOR_RED))
                 else:
-                    stdscr.addstr(i + 2, 0, cpu_line, curses.color_pair(COLOR_GREEN))
-            ram_bar_length = int((mem_info.used / mem_info.total) * max_bar_width)
+                    stdscr.addstr(i + 2, 0, cpu_line,
+                                  curses.color_pair(COLOR_GREEN))
+            ram_bar_length = int(
+                (mem_info.used / mem_info.total) * max_bar_width)
             ram_line = f"RAM: [{('=' * ram_bar_length)}{(' ' * (max_bar_width - ram_bar_length))}] {mem_info.used / (1024**3):.2f} GB / {mem_info.total / (1024**3):.2f} GB"
-            stdscr.addstr(len(cpu_percent) + 3, 0, ram_line, curses.color_pair(COLOR_YELLOW))
-            swap_bar_length = int((swap_info.used / swap_info.total) * max_bar_width)
+            stdscr.addstr(len(cpu_percent) + 3, 0, ram_line,
+                          curses.color_pair(COLOR_YELLOW))
+            swap_bar_length = int(
+                (swap_info.used / swap_info.total) * max_bar_width)
             swap_line = f"Swp: [{('=' * swap_bar_length)}{(' ' * (max_bar_width - swap_bar_length))}] {swap_info.used / (1024**3):.2f} GB / {swap_info.total / (1024**3):.2f} GB"
-            stdscr.addstr(len(cpu_percent) + 4, 0, swap_line, curses.color_pair(COLOR_YELLOW))
+            stdscr.addstr(len(cpu_percent) + 4, 0, swap_line,
+                          curses.color_pair(COLOR_YELLOW))
 
             # Lista de procesos en la parte inferior
-            stdscr.addstr(monitor_height + 1, 0, "PID   Nombre      CPU (%)   RAM (%)", curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
-            stdscr.addstr(monitor_height + 2, 0, "------------------------------------", curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
-            processes = psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent'])
+            stdscr.addstr(monitor_height + 1, 0, "PID   Nombre      CPU (%)   RAM (%)",
+                          curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
+            stdscr.addstr(monitor_height + 2, 0, "------------------------------------",
+                          curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
+            processes = psutil.process_iter(
+                ['pid', 'name', 'cpu_percent', 'memory_percent'])
             process_list = list(processes)
             num_processes = len(process_list)
 
@@ -67,9 +85,11 @@ def mostrar_monitor_recursos(stdscr):
                     memory_percent = proc.info['memory_percent']
                     proc_line = f"{pid}   {name:<15}   {cpu_percent:.2f}%    {memory_percent:.2f}%"
                     if i == selected_process:
-                        stdscr.addstr(monitor_height + i - top_process + 3, 0, proc_line, curses.color_pair(COLOR_CYAN) | curses.A_STANDOUT)
+                        stdscr.addstr(monitor_height + i - top_process + 3, 0, proc_line,
+                                      curses.color_pair(COLOR_CYAN) | curses.A_STANDOUT)
                     else:
-                        stdscr.addstr(monitor_height + i - top_process + 3, 0, proc_line)
+                        stdscr.addstr(monitor_height + i -
+                                      top_process + 3, 0, proc_line)
                 except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                     pass
 
@@ -88,8 +108,11 @@ def mostrar_monitor_recursos(stdscr):
             elif key == ord('q'):
                 break
 
+            # ... (el resto del código es igual)
+
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == "__main__":
     curses.wrapper(mostrar_monitor_recursos)
