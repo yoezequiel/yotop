@@ -6,6 +6,8 @@ COLOR_GREEN = 2
 COLOR_YELLOW = 3
 COLOR_CYAN = 4
 COLOR_WHITE = 5
+sort_key = 'pid'
+reverse_sort = True
 
 
 def init_colors():
@@ -18,6 +20,7 @@ def init_colors():
 
 
 def mostrar_monitor_recursos(stdscr):
+    global sort_key, reverse_sort
     curses.curs_set(0)
     stdscr.nodelay(1)
     sh, sw = stdscr.getmaxyx()
@@ -36,7 +39,7 @@ def mostrar_monitor_recursos(stdscr):
             monitor_height = sh // 2
             max_bar_width = sw - 30
 
-            # Monitor de recursos en la parte superior
+            # Monitor de recursos
             cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
             mem_info = psutil.virtual_memory()
             swap_info = psutil.swap_memory()
@@ -63,7 +66,7 @@ def mostrar_monitor_recursos(stdscr):
             stdscr.addstr(len(cpu_percent) + 4, 0, swap_line,
                           curses.color_pair(COLOR_YELLOW))
 
-            # Lista de procesos en la parte inferior
+            # Lista de procesos
             stdscr.addstr(monitor_height + 1, 0, "PID   Nombre      CPU (%)   RAM (%)",
                           curses.color_pair(COLOR_CYAN) | curses.A_BOLD)
             stdscr.addstr(monitor_height + 2, 0, "------------------------------------",
@@ -71,6 +74,8 @@ def mostrar_monitor_recursos(stdscr):
             processes = psutil.process_iter(
                 ['pid', 'name', 'cpu_percent', 'memory_percent'])
             process_list = list(processes)
+            process_list.sort(
+                key=lambda p: p.info[sort_key], reverse=reverse_sort)
             num_processes = len(process_list)
 
             # Navegación por la lista de procesos
@@ -91,7 +96,6 @@ def mostrar_monitor_recursos(stdscr):
                                       top_process + 3, 0, proc_line)
                 except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                     pass
-
             stdscr.refresh()
 
             # Control de teclado
@@ -104,7 +108,19 @@ def mostrar_monitor_recursos(stdscr):
                 selected_process = min(num_processes - 1, selected_process + 1)
                 if selected_process >= top_process + max_display_lines:
                     top_process = selected_process - max_display_lines + 1
-            elif key == ord('q'):
+            elif key == ord('c') or key == ord('C'):
+                sort_key = 'cpu_percent'
+                reverse_sort = True
+            elif key == ord('r') or key == ord('R'):
+                sort_key = 'memory_percent'
+                reverse_sort = True
+            elif key == ord('n') or key == ord('N'):
+                sort_key = 'name'
+                reverse_sort = False
+            elif key == ord('p') or key == ord('P'):
+                sort_key = 'pid'
+                reverse_sort = False
+            elif key == ord('q') or key == ord('Q'):
                 break
 
     except KeyboardInterrupt:
