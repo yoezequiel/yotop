@@ -7,7 +7,7 @@ COLOR_YELLOW = 3
 COLOR_CYAN = 4
 COLOR_WHITE = 5
 sort_key = 'pid'
-reverse_sort = True
+reverse_sort = False
 
 
 def init_colors():
